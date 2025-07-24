@@ -3,14 +3,6 @@ title: Components
 description: Components
 ---
 
-# Script Functions Module
-
-> **Info**: {jobj.desc}
-
-**Tags**: {jobj.tags.map(tag => `#${tag}`).join(' ')}
-
-## Built-in Functions
-
 {/*
 {
   "name": "",
@@ -42,27 +34,33 @@ description: Components
 }
 */}
 import jobj from './function.json'
+import { readFileSync } from 'fs';
 
 {
   jobj.builtins.forEach(func => {
-    if (func.example) {
-      try {
-        func.example = readFileSync(func.example, 'utf-8');
-      } catch (e) {
-        func.example = null;
-      }
+    try {
+      func.example = readFileSync('content/docs/builtins/examples/' + func.name.toLowerCase() + '.gsc', 'utf-8');
+    } catch (e) {
+      func.example = null;
     }
   })
 }
 
-import { readFileSync } from 'fs';
 import { Tab, Tabs } from 'fumadocs-ui/components/tabs';
 import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
 import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
 
+# Script Functions Module
+
+**Info**: {jobj.desc}
+
+**Tags**: {jobj.tags.map(tag => `#${tag}`).join(' ')}
+
+## Built-in Functions
+
 <Tabs items={jobj.builtins.map(func => func.name)}>
   {jobj.builtins.map(func => (
-    <Tab value={func.name} key={func.name}>
+    <Tab value={func.name} key={func.name} id={func.name.toLowerCase()}>
       <h2>{func.name}</h2>
       <p style={{ whiteSpace: 'pre-line' }}>{func.desc}</p>
 

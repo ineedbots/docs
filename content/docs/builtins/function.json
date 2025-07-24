@@ -35,8 +35,7 @@
 					"required": true,
 					"default": null
 				}
-			],
-			"example": "./content/docs/builtins/examples/getfunction.gsc"
+			]
 		},
 		{
 			"name": "getFunctionName",
@@ -63,8 +62,7 @@
 					"required": true,
 					"default": null
 				}
-			],
-			"example": "./content/docs/builtins/examples/getfunctionname.gsc"
+			]
 		},
 		{
 			"name": "replaceFunc",
@@ -107,8 +105,7 @@
 					"required": false,
 					"default": "0"
 				}
-			],
-			"example": "./content/docs/builtins/examples/replacefunc.gsc"
+			]
 		},
 		{
 			"name": "getDetour",
@@ -135,8 +132,7 @@
 					"required": true,
 					"default": null
 				}
-			],
-			"example": "./content/docs/builtins/examples/getdetour.gsc"
+			]
 		},
 		{
 			"name": "removeDetour",
@@ -159,8 +155,7 @@
 					"required": true,
 					"default": null
 				}
-			],
-			"example": "./content/docs/builtins/examples/removedetour.gsc"
+			]
 		},
 		{
 			"name": "disableDetourOnce",
@@ -183,8 +178,7 @@
 					"required": true,
 					"default": null
 				}
-			],
-			"example": "./content/docs/builtins/examples/disabledetouronce.gsc"
+			]
 		}
 	]
 }
