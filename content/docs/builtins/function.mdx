@@ -5,13 +5,11 @@ description: Builtins for handling functions
 
 import { BuiltinInfo } from 'src/components/builtin_info.mdx';
 
-# Script Functions Module
-
 Module for the manipulation of script functions. Allows for detouring existing functions, and checking if a function exists to avoid compiler/resolver errors.
 
-## Built-in Functions
+# Built-in Functions
 
-### getFunction
+## getFunction
 <BuiltinInfo func={ {
   "name": "getFunction",
   "desc": "Returns {function_pointer} based on <function_path> and <function_name>.\nDoes not trigger compilation or resolving of the script, therefore if the script isn't referenced by an include or far call by any other script at least once it will fail to find the function and return undefined.",
@@ -49,7 +47,7 @@ Module for the manipulation of script functions. Allows for detouring existing f
   "example_path": "content/docs/builtins/examples/"
 } } />
 
-### getFunctionName
+## getFunctionName
 <BuiltinInfo func={ {
   "name": "getFunctionName",
   "desc": "Returns {function_name} of the input <function_pointer> in \"function_path::function_name\" format.",
@@ -79,7 +77,7 @@ Module for the manipulation of script functions. Allows for detouring existing f
   "example_path": "content/docs/builtins/examples/"
 } } />
 
-### replaceFunc
+## replaceFunc
 <BuiltinInfo func={ {
   "name": "replaceFunc",
   "desc": "Detours <from_function> to <to_function> causing subsequent calls to <from_function> to instead call <to_function>.\nCan detour any function including engine invoked script callbacks, except builtins. If [priority] is not specified defaults to 0 allowing for successive replacefunc calls with a higher [priority] value to detour already detoured functions.",
@@ -125,7 +123,7 @@ Module for the manipulation of script functions. Allows for detouring existing f
   "example_path": "content/docs/builtins/examples/"
 } } />
 
-### getDetour
+## getDetour
 <BuiltinInfo func={ {
   "name": "getDetour",
   "desc": "Given a <function_pointer>, return the current {function_detour} for that function.",
@@ -155,7 +153,7 @@ Module for the manipulation of script functions. Allows for detouring existing f
   "example_path": "content/docs/builtins/examples/"
 } } />
 
-### removeDetour
+## removeDetour
 <BuiltinInfo func={ {
   "name": "removeDetour",
   "desc": "Given a <function_pointer>, remove the detour from <function_pointer>.",
@@ -181,7 +179,7 @@ Module for the manipulation of script functions. Allows for detouring existing f
   "example_path": "content/docs/builtins/examples/"
 } } />
 
-### disableDetourOnce
+## disableDetourOnce
 <BuiltinInfo func={ {
   "name": "disableDetourOnce",
   "desc": "Given a <function_pointer>, disable the detour from <function_pointer> for only one call.",

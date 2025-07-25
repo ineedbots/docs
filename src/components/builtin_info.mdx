@@ -10,8 +10,8 @@ export const BuiltinInfo = ({ func }) => {
   }
 
   return (
-    <details class="border border-transparent open:border-black/10 open:bg-gray-100 py-2 px-2">
-      <summary></summary>
+    <details open className="border border-transparent open:border-black/10 open:bg-gray-100 py-2 px-2">
+      <summary />
       <p style={{ whiteSpace: 'pre-line' }}>{func.desc}</p>
 
       {func.notes && (

@@ -5,16 +5,29 @@ description: Builtins for handling File IO operations
 
 import { BuiltinInfo } from 'src/components/builtin_info.mdx';
 
-# Script Functions Module
+Module for accessing, reading, writing and deleting files.
 
+All operations will take place in the `scriptdata` folder. Your path will be prepended with `scriptdata/` if it doesn't have it already, so it doesn't matter if you include it or not. Which means all IO will take place inside of the `scriptdata` folder.
 
-## Built-in Functions
+You cannot traverse upwards in directories. (`..`, `.`, `:`)
 
-### FS_TestFile
+You can use forward slashes or backslashes, make sure to escape your backslashes.
+
+IO uses the game's searchpaths, which means it will search in multiple directories in an order. For example: `<storage_path>/<fs_game>/` will be searched before `<storage_path>/main`, which will be searched if prior was not found, etc.
+
+If the dvar `scr_allowFileIo` is disabled, all of these built-ins will script error stating that it is disabled.
+
+All files are automatically closed when the map changes or restarts (fast_restart or loading a save).
+
+All of these functions begin with `FS_`, so you can do a simple audit and search across a GSC codebase to see what IO operations it will do.
+
+# Built-in Functions
+
+## FS_TestFile
 <BuiltinInfo func={ {
   "name": "FS_TestFile",
   "desc": "Returns true or false if the <file_path> exists.",
-  "notes": "- Dvar 'scr_allowFileIo' needs to be enabled.\n- <file_path> will be prepended with 'scriptdata/' if it doesn't have it already. Which means all IO will take place inside of the 'scriptdata' folder.\n- <file_path> cannot contain upwards directory traversal ('..').\n- IO uses the game's searchpaths, which means it will search in multiple directories in an order. For example: '<storage_path>/<fs_game>/' will be searched before '<storage_path>/main', which will be searched if prior was not found, etc.",
+  "notes": null,
   "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
   "insts": ["GSC"],
   "min_args": 1,
@@ -34,7 +47,451 @@ import { BuiltinInfo } from 'src/components/builtin_info.mdx';
     {
       "name": "file_path",
       "ordinal": 1,
-      "desc": "The filepath to test for.\nCannot contain '..'.\nWill be prepended with 'scriptdata/' if it doesn't already.\nIf using backslashes, they must be escaped.",
+      "desc": "The filepath to test for.",
+      "type": "VAR_STRING",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_FOpen
+<BuiltinInfo func={ {
+  "name": "FS_FOpen",
+  "desc": "Opens a file for 'read'ing, 'append'ing or 'write'ing. Returns a file descriptor <fd>.",
+  "notes": "You can only have a maximum of 10 files open at once.\nUse the return value from this function with other functions.",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 2,
+  "max_args": 3,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <file_path> contains up directory, ie: '..'",
+    "When > 10 files are already opened.",
+    "When trying to open an already open'd file.",
+    "When <file_mode> is invalid."
+  ],
+  "returns": {
+    "name": "fd",
+    "desc": "The file descriptor to the file. Will be > 0.\nWhen OS rejects opening the file for any reason (like writing to a readonly file or reading a non-existant file, etc), will return 0.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "file_path",
+      "ordinal": 1,
+      "desc": "The file to open.",
+      "type": "VAR_STRING",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "file_mode",
+      "ordinal": 2,
+      "desc": "The mode, is one of 'read', 'write' or 'append'.\n'read' - will open the file for reading.\n'write' - will open the file for writing, replaces the old file if exists.\n'append' - will open the file for writing, will append to the old file if it exists.\nFor 'write' and 'append', created files will go inside of '<storage_path>/<fs_game>/'. If 'fs_game' is blank, then '<storage_path>/main/'",
+      "type": "VAR_STRING",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "write_basepath",
+      "ordinal": 3,
+      "desc": "If <file_mode> is 'write' or 'append', setting this to true will save the file to the 'main' folder instead of the 'fs_game' folder.",
+      "type": "VAR_INTEGER",
+      "required": false,
+      "default": "false"
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_Write
+<BuiltinInfo func={ {
+  "name": "FS_Write",
+  "desc": "Writes to the open'd file <fd> the <contents> with no new line.",
+  "notes": "<fd> must be opened for writing. ('append' or 'write')",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 2,
+  "max_args": 2,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid or the file is not opened for 'write' or 'append'."
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "Returns true if operation succeeded.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd to write to.\nMust be a return value from FS_FOpen.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "contents",
+      "ordinal": 2,
+      "desc": "The contents to write to the file with.",
+      "type": "VAR_STRING",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_WriteLine
+<BuiltinInfo func={ {
+  "name": "FS_WriteLine",
+  "desc": "Writes to the open'd file <fd> the <contents> with new line.",
+  "notes": "<fd> must be opened for writing. ('append' or 'write')",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 2,
+  "max_args": 2,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid or the file is not opened for 'write' or 'append'."
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "Returns true if operation succeeded.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd to write to.\nMust be a return value from FS_FOpen.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "contents",
+      "ordinal": 2,
+      "desc": "The contents to write to the file with.",
+      "type": "VAR_STRING",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_ReadLine
+<BuiltinInfo func={ {
+  "name": "FS_ReadLine",
+  "desc": "Reads the file <fd> until a newline character is reached.",
+  "notes": "<fd> must be opened for reading. ('read')",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 1,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid or the file is not opened for 'read'."
+  ],
+  "returns": {
+    "name": "contents",
+    "desc": "Returns the contents of the read action with the newline character stripped.\nIf there is nothing left to read, undefined is returned.\nIf the read were to exceed 65535 characters, it will be trucated and a subsequent read will be required to read more.",
+    "types": ["VAR_STRING", "VAR_UNDEFINED"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd to read from.\nMust be a return value from FS_FOpen.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_Read
+<BuiltinInfo func={ {
+  "name": "FS_Read",
+  "desc": "Reads the file <fd> in it's entirety or <num_chars> characters.",
+  "notes": "<fd> must be opened for reading. ('read')",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 2,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid or the file is not opened for 'read'.",
+    "When <num_chars> < 1"
+  ],
+  "returns": {
+    "name": "contents",
+    "desc": "Returns the contents of the read action.\nIf there is nothing left to read, undefined is returned.\nIf the read were to exceed 65535 characters, it will be trucated and a subsequent read will be required to read more.",
+    "types": ["VAR_STRING", "VAR_UNDEFINED"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd to read from.\nMust be a return value from FS_FOpen.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "num_chars",
+      "ordinal": 2,
+      "desc": "The number of characters to read. Must be > 0",
+      "type": "VAR_INTEGER",
+      "required": false,
+      "default": "65535"
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_FCloseAll
+<BuiltinInfo func={ {
+  "name": "FS_FCloseAll",
+  "desc": "Closes all of the files that are currently opened.",
+  "notes": null,
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 0,
+  "max_args": 0,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0."
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "Always returns 1.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": null,
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_FClose
+<BuiltinInfo func={ {
+  "name": "FS_FClose",
+  "desc": "Closes the file <fd>.",
+  "notes": null,
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 1,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid, or the file is not opened."
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "Always returns 1.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd to close.\nMust be a return value from FS_FOpen.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_Length
+<BuiltinInfo func={ {
+  "name": "FS_Length",
+  "desc": "Returns the <file_length> of the file <fd>.",
+  "notes": null,
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 1,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid, or the file is not opened."
+  ],
+  "returns": {
+    "name": "file_length",
+    "desc": "The length of the open'd file.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd.\nMust be a return value from FS_FOpen.\nCan be both files opened for reading and writing.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_GetSeek
+<BuiltinInfo func={ {
+  "name": "FS_GetSeek",
+  "desc": "Returns the <seek> of the file <fd>.",
+  "notes": "Only works for 'read'ing files.",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 1,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid, or the file is not opened for 'read'."
+  ],
+  "returns": {
+    "name": "seek",
+    "desc": "The current seek of the open'd file.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd.\nMust be a return value from FS_FOpen.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_Seek
+<BuiltinInfo func={ {
+  "name": "FS_Seek",
+  "desc": "Sets the <seek> of the file <fd>.",
+  "notes": "Only works for 'read'ing files.",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 2,
+  "max_args": 2,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <fd> is invalid, or the file is not opened for 'read'."
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "Always returns 1.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "fd",
+      "ordinal": 1,
+      "desc": "The fd.\nMust be a return value from FS_FOpen.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "seek",
+      "ordinal": 2,
+      "desc": "The seek to set to.",
+      "type": "VAR_INTEGER",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_Remove
+<BuiltinInfo func={ {
+  "name": "FS_Remove",
+  "desc": "Deletes the file at <file_path>.",
+  "notes": "Explictly tries to only delete from '<storage>/<fs_game or main>/scriptdata/<file_path>'.",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 2,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0."
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "Returns true if the operation was successful.",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "file_path",
+      "ordinal": 1,
+      "desc": "The file to delete.",
+      "type": "VAR_STRING",
+      "required": true,
+      "default": null
+    },
+    {
+      "name": "use_basepath",
+      "ordinal": 2,
+      "desc": "Setting this to true will delete the file from the 'main' folder instead of the 'fs_game' folder.",
+      "type": "VAR_INTEGER",
+      "required": false,
+      "default": "false"
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
+
+## FS_ListFiles
+<BuiltinInfo func={ {
+  "name": "FS_ListFiles",
+  "desc": "Returns an array of all files in the <dir_path>.",
+  "notes": null,
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 1,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0."
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "Array of all the file names inside of the directory, does not contain the directory, just the file name.",
+    "types": ["array of VAR_STRING"]
+  },
+  "args": [
+    {
+      "name": "dir_path",
+      "ordinal": 1,
+      "desc": "The directory to enumerate for files.",
       "type": "VAR_STRING",
       "required": true,
       "default": null
