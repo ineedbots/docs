@@ -1,0 +1,130 @@
+import { Accordion, Accordions } from 'fumadocs-ui/components/accordion';
+import { DynamicCodeBlock } from 'fumadocs-ui/components/dynamic-codeblock';
+import { readFileSync } from 'fs';
+
+export const BuiltinInfo = ({ func }) => {
+  try {
+    func.example = readFileSync(func.example_path + func.name.toLowerCase() + '.gsc', 'utf-8');
+  } catch (e) {
+    func.example = null;
+  }
+
+  return (
+    <details class="border border-transparent open:border-black/10 open:bg-gray-100 py-2 px-2">
+      <summary></summary>
+      <p style={{ whiteSpace: 'pre-line' }}>{func.desc}</p>
+
+      {func.notes && (
+        <Accordions type="single">
+          <Accordion title="Notes:">
+            <p style={{ whiteSpace: 'pre-line' }}>{func.notes}</p>  
+          </Accordion>
+        </Accordions>
+      )}
+
+      <p>
+        <strong>Min Args:</strong> <code>{func.min_args}</code><br />
+        <strong>Max Args:</strong> <code>{func.max_args}</code><br />
+        <strong>Developer:</strong> <code>{func.developer ? 'True' : 'False'}</code><br />
+        <strong>Function type:</strong> <code>{func.method ? 'Method' : 'Function'}</code><br />
+      </p>
+
+      <Accordions type="single">
+        <Accordion title="Supported Games:">
+          <ul>
+            {func.games.map(game => <li key={game}>{game}</li>)}
+          </ul>
+        </Accordion>
+      </Accordions>
+
+      <br />
+
+      <Accordions type="single">
+        <Accordion title="Supported Instances:">
+          <ul>
+            {func.insts.map(inst => <li key={inst}>{inst}</li>)}
+          </ul>
+        </Accordion>
+      </Accordions>
+
+      <br />
+
+      <Accordions type="single">
+        {func.args ? (
+          <Accordion title="Arguments:">
+            <table>
+              <thead>
+                <tr>
+                  <th>Name</th>
+                  <th>Ordinal</th>
+                  <th>Type</th>
+                  <th>Required</th>
+                  <th>Default</th>
+                  <th>Description</th>
+                </tr>
+              </thead>
+              <tbody>
+                {func.args.map(arg => (
+                  <tr key={arg.name}>
+                    <td><code>{arg.name}</code></td>
+                    <td><code>{arg.ordinal ? arg.ordinal : 'Self'}</code></td>
+                    <td><code>{arg.type}</code></td>
+                    <td>{arg.required ? 'Yes' : 'No'}</td>
+                    <td>{arg.default || 'None'}</td>
+                    <td style={{ whiteSpace: 'pre-line' }}>{arg.desc}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </Accordion>
+        ) : (
+          <Accordion title="Does not take any arguments." />
+        )}
+      </Accordions>
+
+      <br />
+
+      <Accordions type="single">
+        {func.returns ? (
+          <Accordion title="Returns:">
+            <p style={{ whiteSpace: 'pre-line' }}>
+              <strong>Name:</strong> <code>{func.returns.name}</code><br />
+              <strong>Type(s):</strong> {<code>{func.returns.types.join(', ')}</code>}<br />
+              <strong>Description:</strong> {func.returns.desc}
+            </p>
+          </Accordion>
+        ) : (
+          <Accordion title="Does not return any value." />
+        )}
+      </Accordions>
+
+      <br />
+
+      <Accordions type="single">
+        {func.throws ? (
+          <Accordion title="Throws:">
+            <ul>
+              {func.throws.map((error, i) => (
+                <li key={i} style={{ whiteSpace: 'pre-line' }}>{error}</li>
+              ))}
+            </ul>
+          </Accordion>
+        ) : (
+          <Accordion title="Does not throw any exceptions." />
+        )}
+      </Accordions>
+
+      {func.example && (
+        <>
+          <br />
+          <Accordions type="single">
+            <Accordion title="Example:">
+              {/*c lang because gsc isnt a supported lang (yet)*/}
+              <DynamicCodeBlock lang="c" code={func.example} />
+            </Accordion>
+          </Accordions>
+        </>
+      )}
+    </details>
+  );
+};

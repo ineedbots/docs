@@ -1,0 +1,44 @@
+---
+title: File IO
+description: Builtins for handling File IO operations
+---
+
+import { BuiltinInfo } from 'src/components/builtin_info.mdx';
+
+# Script Functions Module
+
+
+## Built-in Functions
+
+### FS_TestFile
+<BuiltinInfo func={ {
+  "name": "FS_TestFile",
+  "desc": "Returns true or false if the <file_path> exists.",
+  "notes": "- Dvar 'scr_allowFileIo' needs to be enabled.\n- <file_path> will be prepended with 'scriptdata/' if it doesn't have it already. Which means all IO will take place inside of the 'scriptdata' folder.\n- <file_path> cannot contain upwards directory traversal ('..').\n- IO uses the game's searchpaths, which means it will search in multiple directories in an order. For example: '<storage_path>/<fs_game>/' will be searched before '<storage_path>/main', which will be searched if prior was not found, etc.",
+  "games": ["T4SP", "T4MP", "T5SP", "T5MP", "T6MP", "T6ZM"],
+  "insts": ["GSC"],
+  "min_args": 1,
+  "max_args": 1,
+  "method": false,
+  "developer": false,
+  "throws": [
+    "When dvar 'scr_allowFileIo' is 0.",
+    "When <file_path> contains up directory, ie: '..'"
+  ],
+  "returns": {
+    "name": "result",
+    "desc": "True if the file exists, false otherwise",
+    "types": ["VAR_INTEGER"]
+  },
+  "args": [
+    {
+      "name": "file_path",
+      "ordinal": 1,
+      "desc": "The filepath to test for.\nCannot contain '..'.\nWill be prepended with 'scriptdata/' if it doesn't already.\nIf using backslashes, they must be escaped.",
+      "type": "VAR_STRING",
+      "required": true,
+      "default": null
+    }
+  ],
+  "example_path": "content/docs/builtins/examples/"
+} } />
